@@ -1,0 +1,679 @@
+---
+title: "Is smoking cigarettes a potential risk factor in developing a Coronary Heart Disease?"
+author: "Adarsh Salapaka, Alisha Siddiqui, Harsh Tandon, Jaskaran Kohli"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE,message=FALSE}
+##Import Libraries and set working directory
+
+#please uncomment the lines if any of the packages are not installed on your system 
+
+#install.packages("tidyverse") 
+#install.packages("dplyr")
+#install.packages("ggplot2")
+#install.packages("car")
+#install.packages("lattice")
+#install.packages("tidyr")
+#install.packages("caret")
+#install.packages("MASS")
+#install.packages("broom")
+#install.packages("ROCR")
+#install.packages("psych")
+#install.packages("caTools")
+#install.packages("stargazer")
+#install.packages("lmtest")
+#install.packages("sandwich")
+#install.packages("ggeffects")
+#install.packages("ggcorrplot")
+#install.packages("corrr")
+#install.packages("lattice")
+#install.packages("erer")
+
+library(tidyverse) 
+library(dplyr)
+library(ggplot2)
+library(car)
+library(lattice)
+library(tidyr)
+library(caret)
+library(MASS)
+library(broom)
+library(ROCR)
+library(psych)
+library(caTools)
+library(stargazer)
+library(lmtest)
+library(sandwich)
+library(ggeffects)
+library(ggcorrplot)
+library(corrr)
+library(lattice)
+library(erer)
+```
+<center>![](https://media.giphy.com/media/uMQcyqzwkCEeI/giphy.gif)</center>
+
+## Introduction :
+***
+
+Every year about 735,000 Americans have a heart attack. Of these, 525,000 are a first heart attack and 210,000 happen in people who have already had a heart attack. About 647,000 people die of heart disease every year–that’s 1 in every 4 deaths.
+The predicted risk of an individual can be a useful guide for making clinical decisions on the intensity of preventive interventions: such as restrictions on diet, physical activity, drugs.
+Having a risk stratification approach will be beneficial to settings where saving the greatest number of lives at lowest cost becomes imperative. \
+
+Coronary artery disease is thought to begin with damage or injury to the inner layer of a coronary artery, sometimes as early as childhood. Theoretically, this damage may be caused by various factors, including:
+
+  * Smoking - It is believed, people who smoke cigarettes are at a higher risk of getting coronary heart disease. As a proxy for smoking, we have a variable called ‘cigsPerDay’ which denotes the number of cigarettes a person smokes per day. 
+  * Age - As people get old, the cells in their body start to degenerate. As a result of the degeneration of cells, muscles in the body suffer from muscle atrophy. Heart muscles also undergo muscle atrophy as age increases. We have ‘Age’ that is the age of a person who participated in the study, and this can be used as a potential control variable.
+  * Gender - A woman’s heart may look just like a man’s, but there are significant differences. For example, a woman’s heart is usually smaller, as are some of its interior chambers. More importantly, Estrogen (a hormone) offers women some protection from heart disease. So as a proxy for gender, we will use ‘Male’ which indicates the gender of the person who participated in the study. 
+  * High blood pressure - Among all heart attack patients, there is one factor that puts them under the radar. That factor is high blood pressure. Nearly any patient who suffered from a heart attack had a history of high blood pressure. As a proxy for high blood pressure, we use ‘BPMeds’ which denotes whether or not a person was on blood pressure medication. If the person is on blood pressure medication, it indicates that he/she has high blood pressure, and thus is at greater risk of coronary heart disease. 
+  * Diabetes or insulin resistance -  Insulin resistance occurs when excess glucose in the blood reduces the ability of the cells to absorb and use blood sugar for energy. This is also known as Diabetes. Research shows that the amount of sugar, or glucose, in the blood changes the behavior of blood vessels, making them contract more than normal. This excess pressure makes these blood vessels burst and causes a blood clot, which in turn leads to a heart attack. As a proxy for this, we have ‘glucose’ which indicates the blood sugar level of the person in the study. 
+  * Heart rate - Studies suggest that a persistently high heart rate (or high resting heart rate) is associated with an increase in coronary and cardiovascular death rates, the precise reason for this association remains unclear. It has been attributed to overall lack of physical fitness or poor health. As a proxy for this, we have ‘heartRate’ of people who participated in the study.
+
+
+## Abstract
+
+The World Health Organization has estimated 12 million deaths occur worldwide, every year due to Heart diseases. Half the deaths in the United States and other developed countries are due to cardiovascular diseases. The early prognosis of cardiovascular diseases can aid in making decisions on lifestyle changes in high risk patients and in turn reduce the complications. This project intends to pinpoint the most relevant/risk factors of developing a coronary heart disease and understand the causal relationship of these factors to answer our business question and hypothesis. In the due course of the completion of this project we have developed a deeper understanding of various concepts of logistic regression and other econometric tools as taught in this course.
+
+
+## Hypothesis Question
+***
+#### <b> Is cigarette smoked per day a factor in determining whether a patient suffers from Coronary Heart Disease?</b>
+
+<b>$\sf{H_{O}}$</b> : There is no association between Cigarette smoking and risk of CHD.
+
+<b>$\sf{H_{A}}$</b> : Cigarette smoking substantially increases the risk of coronary heart disease
+ 
+* Dependent variable: 
+    + TenYearCHD - does the person has Coronary Heart Disease(=1) or not(=0)?
+* Independent Variables: 
+
+    + Variable of interest: cigarettes smoked per day
+    + Control Variables: age, male, BPMeds, glucose, heartRate, sysBP, etc.
+    
+## Let's import the framingham heart study data from CSV
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+data = read.csv("framingham.csv")
+head(data)
+```
+
+Data has been collected from an ongoing cardiovascular study on residents of the town of Framingham, Massachusetts. The dataset provides the patients’ information. The data has 4238 records, 16 attributes.
+
+* <b>DEMOGRAPHIC</b> 
+  + Sex, Age
+* <b>BEHAVIORAL</b>
+  + Current smoker, Cigs per day
+* <b>MEDICAL HISTORY</b>
+  + BP Meds, Prevalent Stroke, Prevalent Hyp, Diabetes
+* <b>MEDICAL CURRENT</b>
+  + Tot Chol, Sys BP, Dia BP, BMI, Heart Rate, Glucose
+* <b>TARGET VARIABLE</b>
+  + TenYearCHD - 10 year risk of coronary heart disease)
+
+
+
+
+
+
+
+## What does this data look like?
+***
+```{r}
+stargazer(data, type="text", median=TRUE, iqr=TRUE,digits=1, title="Descriptive Statistics")
+```
+
+### There are a NULL Value on education, cigsPerDay, BPMeds, totChol, BMI, heartRate, and glucose feature
+***
+  
+Lets plot the data to see if there are any outliers
+```{r}
+par(mfrow=c(2,3))
+boxplot(x=data$education, xlab="education",col=c('powderblue'))
+boxplot(x=data$cigsPerDay, xlab="cigsPerDay",col=c('powderblue'))
+boxplot(x=data$totChol, xlab='totChol',col=c('powderblue'))
+boxplot(x=data$BMI, xlab='BMI',col=c('powderblue'))
+boxplot(x=data$heartRate, xlab='heartRate',col=c('powderblue'))
+boxplot(x=data$glucose, xlab='glucose',col=c('powderblue'))
+```
+
+  * there is no outlier data on education feature, so we can use mean()
+  * there are outlier data on cigsPerDay feature, so it should be use median() approach
+  * on BPMeds author using 0 for the NULL Value.
+  * there are outlier data on totChol feature, so it should be use median() approach
+  * there are outlier data on BMI feature, so it should be use median() approach
+  * there are outlier data on heartRate feature, so it should be use median() approach
+  * there are outlier data on glucose feature, so it should be use median() approach
+
+## Data Cleaninig and exploration
+
+***
+#### Let's check for missing values 
+
+```{r}
+colSums(is.na(data)) #check count of missing values before imputing
+```
+We can see that , 
+
+* Education contains 105 missing values.
+* cigsPerDay contains 29 missing values.
+* BPMeds contains 53 missing values.
+* totChol contains 50 missing values.
+* BMI contains 19 missing values.
+* heartRate contain 1 missing value.
+* glucose contains 388 missing values.
+
+#### After imputing the missing values
+
+```{r}
+data[is.na(data$education) == TRUE, "education"] = round(mean(data$education, na.rm = TRUE))
+data[is.na(data$cigsPerDay) == TRUE, "cigsPerDay"] = median(data$cigsPerDay, na.rm = TRUE)
+data[is.na(data$BPMeds) == TRUE, "BPMeds"] = 0
+data[is.na(data$totChol) == TRUE, "totChol"] = median(data$totChol, na.rm = TRUE)
+data[is.na(data$BMI)== TRUE, "BMI"] = mean(data$BMI, na.rm = TRUE)
+data[is.na(data$heartRate) == TRUE, "heartRate"] = median(data$heartRate, na.rm = TRUE)
+data[is.na(data$glucose) == TRUE, "glucose"] = median(data$glucose, na.rm = TRUE)
+
+colSums(is.na(data)) #check count of missing values after imputing
+```
+
+Now that the data is free from missing values, let's compute the correlation to see if any features are highly correlated.
+
+#### Correlation between independent variables
+
+```{r}
+ggcorrplot(cor(data, use="pairwise.complete.obs"), p.mat = cor_pmat(data), hc.order=FALSE, type='lower',lab=TRUE, lab_size=2.5)
+```
+
+Lets look at some correlations that are higher than 0.70. Correlations below 0.70 can be assumed to not affect our analysis. 
+
+<body>
+<ul>
+<li><b>currentSmoker and cigsPerDay are highly correlated (0.76)</b></li>
+<li><b> sysBP and diaBP are highly correlated (0.78)</b> </li>
+<li><b> prevalentHyp and sysBP are highly correlated (0.70)</b> </li>
+</ul>
+</body>
+
+```{r}
+data$male = factor(data$male)
+data$education = factor(data$education)
+data$BPMeds = factor(data$BPMeds)
+data$prevalentStroke = factor(data$prevalentStroke)
+data$prevalentHyp = factor(data$prevalentHyp)
+data$diabetes = factor(data$diabetes)
+data$currentSmoker = factor(data$currentSmoker)
+```
+
+## Analysis
+
+***
+#### How does our Variable of Interest affect our dependent variable?
+
+From our expectations, <b>an increase in the number of cigarettes per day should increase the risk of getting coronary heart disease.</b> 
+```{r}
+Plot_1  = ggplot(data, aes(x=cigsPerDay, y=TenYearCHD)) + geom_point(col="blue")  +
+  labs(title = "TenYearCHD vs cigsPerDay", x = "cigsPerDay", y = "TenYearCHD") +
+  
+  stat_smooth(method="glm", method.args=list(family=binomial(link="logit")), se=FALSE, col = "green" )
+suppressMessages(print(Plot_1))
+```
+
+## In our base model, lets add some control variable
+***
+### Adding Control Variable: Age
+
+```{r warning=FALSE}
+#------------------------------------Adding Age--------------------------------
+Plot_2= ggplot(data, aes(x=age, y=TenYearCHD)) + geom_point(col="blue") + 
+  labs(title = "TenYearCHD vs age", x = "age", y = "TenYearCHD") +
+  stat_smooth(method="glm", method.args=list(family=binomial(link="logit")), se=FALSE, col = "green" )
+suppressMessages(print(Plot_2))
+```
+
+
+<b>From the plot between Age and dependent variable, it appears as age increases, the risk of getting Coronary Heart Disease increases.</b> \
+Lets see how <b>age</b> relates to cigsPerDay (variable of interest).
+
+```{r}
+cat("Correlation (X, Z):", cor(data$cigsPerDay, data$age))
+anova(lm(cigsPerDay ~ age, data=data))
+```
+
+Now, when given a single argument to anova, it produces a table which tests whether the model terms are significant. So, through the line of code shown above, we are trying to show how ‘age’ relates to our variable of interest (cigsPerDay). From the results we can see that not only age is negatively correlated with cigsPerDay, but also significant with 95% confidence. Thus establishing the relevance that corr (X, Z) < 0.
+
+  * As Z(age) affects Y positively, and corr(X,Z) < 0, we suspect presence of downward bias.
+```{r warning=FALSE}
+#------------------------------------Adding Age--------------------------------
+l1 = glm(TenYearCHD~cigsPerDay, family=binomial, x=TRUE,  data=data)
+l2 = glm(TenYearCHD~cigsPerDay+age, family=binomial, x=TRUE, data=data)
+stargazer(l1, l2, se=list(NULL, NULL), 
+          column.labels=c("logit-1", "logit-2"),
+          title="Logit- CHD and cigsPerDay", type="text", 
+          star.cutoffs = c(0.05,0.01,0.001), df=FALSE, digits=3)
+
+pseudoR2=(l2$null.deviance-l2$deviance)/l2$null.deviance
+pseudoR2
+
+fm1a=maBina(l1, x.mean=TRUE, rev.dum=TRUE, digits=3)
+fm2a=maBina(l2, x.mean=TRUE, rev.dum=TRUE, digits=3)
+stargazer(fm1a, fm2a, se=list(NULL, NULL), 
+          title="Logit- Marginal Effects", type="text", 
+          column.labels=c("logit-1", "logit-2"),
+          star.cutoffs = c(0.05,0.01,0.001), df=FALSE, digits=3)
+
+```
+
+* From the model-2 results, we see that adding <b>Age</b> increased estimate of cigsPerDay, suggesting that model1 suffered from downward bias. 
+* Pseudo R-square increases to 0.07345529.\
+
+<b>Interpretation</b>: \
+
+* Logit1 - 
+  * cigsPerDay: An increase in cigarettes smoked per day by 1, on average, will increase the chance of CHD by 0.2%.
+* Logit2 - 
+  * cigsPerDay: Keeping all other things constant, an increase in cigarettes smoked per day by 1, on average, will increase the chance of CHD by 0.3%.
+  * age: Keeping all other things constant, an increase in age by 1 year, on average will increase the chance of CHD by 1.0%.
+  
+***
+  
+### Adding Control Variable:Male
+
+```{r}
+#---------------------------------Adding Male-----------------------------------
+Plot_3 = ggplot(subset(data, data$TenYearCHD==1), aes(x=TenYearCHD, fill = male)) + 
+  geom_bar(position = position_dodge(preserve = "single"))
+suppressMessages(print(Plot_3))
+```
+
+
+
+<b>From the plot between Male and dependent variable, it appears that the risk of getting Coronary Heart Disease increases is greater for males than females.</b> \
+Lets see how <b>male</b> relates to cigsPerDay (variable of interest).
+
+```{r}
+cat("Correlation (X, Z):", cor(data$cigsPerDay, as.numeric(data$male)))
+anova(lm(cigsPerDay ~ male, data=data))
+```
+
+Now, when given a single argument to anova, it produces a table which tests whether the model terms are significant. So, we are trying to show how ‘male’ relates to our variable of interest (cigsPerDay). From the results we can see that not only male is positively correlated with cigsPerDay, but also significant with 95% confidence. Thus establishing the relevance that corr (X, Z) > 0. \
+
+ * As Z(male) affects Y positively, and corr(X,Z) > 0, we suspect presence of upward bias.
+
+```{r warning=FALSE}
+#---------------------------------Adding Male-----------------------------------
+
+l3 = glm(TenYearCHD~cigsPerDay+age+male, family=binomial, x=TRUE, data=data)
+stargazer(l1, l2, l3, se=list(NULL, NULL, NULL),
+          column.labels=c("logit-1", "logit-2", "logit-3"),
+          title='Logit- CHD and cigsPerDay', type='text',
+          star.cutoffs = c(0.05,0.01,0.001), df=FALSE, digits=3)
+
+pseudoR2=(l3$null.deviance-l3$deviance)/l3$null.deviance
+pseudoR2
+
+fm3a=maBina(l3, x.mean=TRUE, rev.dum=TRUE, digits=3)
+stargazer(fm1a, fm2a, fm3a, se=list(NULL, NULL, NULL), 
+          column.labels=c("logit-1", "logit-2", "logit-3"),
+          title="Logit- Marginal Effects", type="text", 
+          star.cutoffs = c(0.05,0.01,0.001), df=FALSE, digits=3)
+```
+
+*From the model-3 results, we see that adding <b>Male</b> decreased estimate of cigsPerDay, suggesting that model2 suffered from upward bias. 
+*Pseudo R-square increases from 0.07345529 to 0.07848801.\
+
+<b>Interpretation:</b> \
+
+* Logit2 - 
+  * cigsPerDay: Keeping all other things constant, an increase in cigarettes smoked per day by 1, on average, will increase the chance of CHD by 0.3%.
+  * age: Keeping all other things constant, an increase in age by 1 year, on average will increase the chance of CHD by 1.0%.
+* Logit3 - 
+  * cigsPerDay: Keeping all other things constant, an increase in cigarettes smoked per day by 1, on average, will increase the chance of CHD by 0.2%.
+  * age: Keeping all other things constant, an increase in age by 1 year, on average will increase the chance of CHD by 0.9%.
+  * male: Keeping all other things constant, on average, Males have higher risk of CHD than Females by 4.6%.
+  
+***  
+
+### Adding Control Variable:BPMeds
+```{r}
+#----------------------------Adding BPMeds-----------------------------------------
+Plot_4= ggplot(subset(data, data$TenYearCHD==1), aes(x=TenYearCHD, fill = BPMeds)) + 
+  geom_bar(position = position_dodge(preserve = "single"))
+suppressMessages(print(Plot_4))
+```
+
+Lets see how <b>BPMeds</b> relates to cigsPerDay (variable of interest).
+
+```{r}
+cat("Correlation (X, Z):", cor(data$cigsPerDay, as.numeric(data$BPMeds)))
+anova(lm(cigsPerDay ~ BPMeds, data=data))
+```
+
+Now, when given a single argument to anova, it produces a table which tests whether the model terms are significant. So, we are trying to show how ‘BPMeds’ relates to our variable of interest (cigsPerDay). From the results we can see that not only BPMeds is negatively correlated with cigsPerDay, but also significant with 95% confidence. Thus establishing the relevance that corr (X, Z) < 0. 
+
+ * As Z(BPMeds) affects Y positively, and corr(X,Z) < 0, we suspect presence of downward bias.
+
+```{r warning=FALSE}
+#----------------------------Adding BPMeds----------------------------------------
+
+l4 = glm(TenYearCHD~cigsPerDay+age+male+BPMeds, family=binomial, x=TRUE, data=data)
+stargazer(l1, l2, l3, l4, se=list(NULL, NULL, NULL, NULL),
+          column.labels=c("logit-1", "logit-2", "logit-3", 'logit-4'),
+          title='Logit- CHD and cigsPerDay', type='text',
+          star.cutoffs = c(0.05,0.01,0.001), df=FALSE, digits=3)
+
+pseudoR2=(l4$null.deviance-l4$deviance)/l4$null.deviance
+pseudoR2
+
+fm4a=maBina(l4, x.mean=TRUE, rev.dum=TRUE, digits=3)
+stargazer(fm1a, fm2a, fm3a, fm4a, se=list(NULL, NULL, NULL, NULL), 
+          column.labels=c("logit-1", "logit-2", "logit-3", 'logit-4'),
+          title="Logit- Marginal Effects", type="text", 
+          star.cutoffs = c(0.05,0.01,0.001), df=FALSE, digits=3)
+```
+
+* From the model-4 results, we see that adding <b>BPMeds</b> increased estimate of cigsPerDay, suggesting that model3 suffered from downward bias. 
+* Pseudo R-square increases from 0.07848801 to 0.08244846.\
+
+<b>Interpretation:</b> \
+
+* Logit3 - 
+  * cigsPerDay: Keeping all other things constant, an increase in cigarettes smoked per day by 1, on average, will increase the chance of CHD by 0.2%.
+  * age: Keeping all other things constant, an increase in age by 1 year, on average will increase the chance of CHD by 0.9%.
+  * male: Keeping all other things constant, on average, Males have higher risk of CHD than Females by 4.6%.
+* Logit4 - 
+  * cigsPerDay: Keeping all other things constant, an increase in cigarettes smoked per day by 1, on average, will increase the chance of CHD by 0.2%.
+  * age: Keeping all other things constant, an increase in age by 1 year, on average will increase the chance of CHD by 0.9%.
+  * male: Keeping all other things constant, on average, Males have higher risk of CHD than Females by 4.9%.
+  * BPMeds: Keeping all other things constant, on average, a person on BP Medication has a higher risk of CHD than a person not on BP Medication by 11.9%.
+  
+***
+
+### Adding Control Variable: glucose
+```{r}
+#----------------------------Adding glucose-----------------------------------------------
+Plot_5 = ggplot(data, aes(x=glucose, y=TenYearCHD)) + geom_point(col="blue") + 
+  labs(title = "TenYearCHD vs glucose", x = "glucose", y = "TenYearCHD") +
+  stat_smooth(method="glm", method.args=list(family=binomial(link="logit")), se=FALSE, col = "green" )
+suppressMessages(print(Plot_5))
+```
+
+<b>From the plot between glucose and dependent variable, it appears as levels of glucose increase, the risk of getting Coronary Heart Disease increases.</b> \
+Lets see how <b>glucose</b> relates to cigsPerDay (variable of interest).
+
+```{r}
+cat("Correlation (X, Z):", cor(data$cigsPerDay, data$glucose))
+anova(lm(cigsPerDay ~ glucose, data=data))
+```
+
+Now, when given a single argument to anova, it produces a table which tests whether the model terms are significant. So, through the line of code shown above, we are trying to show how ‘glucose’ relates to our variable of interest (cigsPerDay). From the results we can see that not only glucose is negatively correlated with cigsPerDay, but also significant with 95% confidence. Thus establishing the relevance that corr (X, Z) < 0. \
+
+ * As Z(glucose) affects Y positively, and corr(X,Z) < 0, we suspect presence of downward bias.
+
+```{r warning=FALSE}
+#----------------------------Adding glucose-----------------------------------------------
+
+l5 = glm(TenYearCHD~cigsPerDay+age+male+BPMeds+glucose, family=binomial, x=TRUE, data=data)
+stargazer(l1, l2, l3, l4, l5, se=list(NULL, NULL, NULL, NULL, NULL),
+          column.labels=c("logit-1", "logit-2", "logit-3", 'logit-4', 'logit-5'),
+          title='Logit- CHD and cigsPerDay', type='text',
+          star.cutoffs = c(0.05,0.01,0.001), df=FALSE, digits=3)
+
+pseudoR2=(l5$null.deviance-l5$deviance)/l5$null.deviance
+pseudoR2
+
+fm5a=maBina(l5, x.mean=TRUE, rev.dum=TRUE, digits=3)
+stargazer(fm1a, fm2a, fm3a, fm4a,fm5a, se=list(NULL, NULL, NULL, NULL, NULL), 
+          column.labels=c("logit-1", "logit-2", "logit-3", 'logit-4', 'logit-5'),
+          title="Logit- Marginal Effects", type="text", 
+          star.cutoffs = c(0.05,0.01,0.001), df=FALSE, digits=3)
+```
+
+* From the model-5 results, we see that adding <b>glucose</b> increased the estimate of cigsPerDay, suggesting that model4 suffered from downward bias.
+* Pseudo R-square increases from 0.08244846 to 0.09045346.\
+
+<b>Interpretation:</b> \
+
+* Logit4 - 
+  * cigsPerDay: Keeping all other things constant, an increase in cigarettes smoked per day by 1, on average, will increase the chance of CHD by 0.2%.
+  * age: Keeping all other things constant, an increase in age by 1 year, on average will increase the chance of CHD by 0.9%.
+  * male: Keeping all other things constant, on average, Males have higher risk of CHD than Females by 4.9%.
+  * BPMeds: Keeping all other things constant, on average, a person on BP Medication has a higher risk of CHD than a person not on BP Medication by 11.9%.
+* Logit5 - 
+  * cigsPerDay: Keeping all other things constant, an increase in cigarettes smoked per day by 1, on average, will increase the chance of CHD by 0.2%.
+  * age: Keeping all other things constant, an increase in age by 1 year, on average will increase the chance of CHD by 0.9%.
+  * male: Keeping all other things constant, on average, Males have higher risk of CHD than Females by 4.8%.
+  * BPMeds: Keeping all other things constant, on average, a person on BP Medication has a higher risk of CHD than a person not on BP Medication by 11.2%.
+  * glucose: Keeping all other things constant, an increase in glucose level by 1 mg/DL, on average, will increase the risk of CHD by 0.1%.
+  
+***
+
+### Adding Control Variable:heartRate
+```{r}
+#----------------------------Adding heartRate-----------------------------------------------
+Plot_6 =ggplot(data, aes(x=heartRate, y=TenYearCHD)) + geom_point(col="blue") + 
+  labs(title = "TenYearCHD vs heartRate", x = "heartRate", y = "TenYearCHD") +
+  stat_smooth(method="glm", method.args=list(family=binomial(link="logit")), se=FALSE, col = "green" )
+suppressMessages(print(Plot_6))
+```
+
+<b>From the plot between heartRate and dependent variable, it appears as heartRate increases, the risk of getting Coronary Heart Disease increases.</b>\
+
+Lets see how <b>heartRate</b> relates to cigsPerDay (variable of interest).
+
+```{r}
+cat("Correlation (X, Z):", cor(data$cigsPerDay, data$heartRate))
+anova(lm(cigsPerDay ~ heartRate, data=data))
+```
+
+Now, when given a single argument to anova, it produces a table which tests whether the model terms are significant. So, through the line of code shown above, we are trying to show how ‘heartRate’ relates to our variable of interest (cigsPerDay). From the results we can see that not only heartRate is positively correlated with cigsPerDay, but also significant with 95% confidence. Thus establishing the relevance that corr (X, Z) > 0.\
+
+ * As Z(heartRate) affects Y positively, and corr(X,Z) > 0, we suspect presence of upward bias.
+
+```{r warning=FALSE}
+#----------------------------Adding heartRate-----------------------------------------------
+
+l6 = glm(TenYearCHD~cigsPerDay+age+male+BPMeds+glucose+heartRate, family=binomial, x=TRUE, data=data)
+stargazer(l1, l2, l3, l4, l5, l6,  se=list(NULL, NULL, NULL, NULL, NULL, NULL),
+          column.labels=c("logit-1", "logit-2", "logit-3", 'logit-4', 'logit-5', 'logit-6'),
+          title='Logit- CHD and cigsPerDay', type='text',
+          star.cutoffs = c(0.05,0.01,0.001), df=FALSE, digits=3)
+
+pseudoR2=(l6$null.deviance-l6$deviance)/l6$null.deviance
+pseudoR2
+
+fm6a=maBina(l6, x.mean=TRUE, rev.dum=TRUE, digits=3)
+stargazer(fm1a, fm2a, fm3a, fm4a,fm5a, fm6a, se=list(NULL, NULL, NULL, NULL, NULL, NULL), 
+          column.labels=c("logit-1", "logit-2", "logit-3", 'logit-4', 'logit-5', 'logit-6'),
+          title="Logit- Marginal Effects", type="text", 
+          star.cutoffs = c(0.05,0.01,0.001), df=FALSE, digits=3)
+```
+
+* From the model-6 results, we see that adding <b>heartRate</b> decreased the estimate of cigsPerDay, suggesting that model5 suffered from upward bias.
+* Pseudo R-square increases from 0.09045346 to 0.0909557.\
+
+<b>Interpretation:</b> \
+
+* Logit5 - 
+  * cigsPerDay: Keeping all other things constant, an increase in cigarettes smoked per day by 1, on average, will increase the chance of CHD by 0.2%.
+  * age: Keeping all other things constant, an increase in age by 1 year, on average will increase the chance of CHD by 0.9%.
+  * male: Keeping all other things constant, on average, Males have higher risk of CHD than Females by 4.8%.
+  * BPMeds: Keeping all other things constant, on average, a person on BP Medication has a higher risk of CHD than a person not on BP Medication by 11.2%.
+  * glucose: Keeping all other things constant, an increase in glucose level by 1 mg/DL, on average, will increase the risk of CHD by 0.1%.
+* Logit6 - 
+  * cigsPerDay: Keeping all other things constant, an increase in cigarettes smoked per day by 1, on average, will increase the chance of CHD by 0.2%.
+  * age: Keeping all other things constant, an increase in age by 1 year, on average will increase the chance of CHD by 0.9%.
+  * male: Keeping all other things constant, on average, Males have higher risk of CHD than Females by 5.0%.
+  * BPMeds: Keeping all other things constant, on average, a person on BP Medication has a higher risk of CHD than a person not on BP Medication by 11.1%.
+  * glucose: Keeping all other things constant, an increase in glucose level by 1 mg/DL, on average, will increase the risk of CHD by 0.1%.
+  * heartRate: Keeping all other things constant, an increase in heartRate by 1 unit, on average, will increase the risk of CHD by 0.1%.
+  
+***
+
+
+### Adding interaction term prevalentStroke*BPMeds
+
+```{r}
+mul = as.numeric(data$prevalentStroke) * as.numeric(data$BPMeds)
+cat("Correlation (Y, Z):", cor(data$TenYearCHD, mul))
+```
+
+We see that interaction term positively affects Y. \
+Lets see how <b>heartRate</b> relates to cigsPerDay (variable of interest).
+
+```{r}
+cat("Correlation (X, Z):", cor(data$cigsPerDay, mul))
+anova(lm(cigsPerDay ~ prevalentStroke*BPMeds, data=data))
+```
+
+Now, when given a single argument to anova, it produces a table which tests whether the model terms are significant. So, we are trying to show how interaction term relates to our variable of interest (cigsPerDay). From the results we can see that the interaction is negatively correlated with cigsPerDay, but is not significant. Thus we can not establish the relevance that corr (X, Z) < 0. 
+
+ * As Z(interaction term) affects Y positively, and corr(X,Z) < 0 (not significant), we suspect presence of downward bias.
+
+```{r warning=FALSE}
+#----------------------------Adding prevalentStroke*BPMeds-----------------------------------------------
+l7 = glm(TenYearCHD~cigsPerDay+age+male+BPMeds+glucose+heartRate+(prevalentStroke*BPMeds), family=binomial, x=TRUE, data=data)
+stargazer(l5, l6, l7, se=list(NULL, NULL, NULL),
+          title='Logit- CHD and cigsPerDay', type='text',
+          column.labels=c("logit-5", "logit-6", "logit-7"),
+          star.cutoffs = c(0.05,0.01,0.001), df=FALSE, digits=3)
+
+pseudoR2=(l7$null.deviance-l7$deviance)/l7$null.deviance
+pseudoR2
+
+fm7a=maBina(l7, x.mean=TRUE, rev.dum=TRUE, digits=3)
+stargazer(fm5a, fm6a, fm7a, se=list(NULL, NULL, NULL), 
+          column.labels=c("logit-5", "logit-6", "logit-7"),
+          title="Logit- Marginal Effects", type="text", 
+          star.cutoffs = c(0.05,0.01,0.001), df=FALSE, digits=3)
+```
+
+* Adding prevalentStroke*BPMeds did not change the estimate of cigsPerDay, suggesting that model6 did not suffer from bias.\
+* Pseudo R-square increases from 0.0909557 to 0.09408247.\
+
+<b>Interpretation:</b> \
+
+* Logit6 - 
+  * cigsPerDay: Keeping all other things constant, an increase in cigarettes smoked per day by 1, on average, will increase the chance of CHD by 0.2%.
+  * age: Keeping all other things constant, an increase in age by 1 year, on average will increase the chance of CHD by 0.9%.
+  * male: Keeping all other things constant, on average, Males have higher risk of CHD than Females by 5.0%.
+  * BPMeds: Keeping all other things constant, on average, a person on BP Medication has a higher risk of CHD than a person not on BP Medication by 11.1%.
+  * glucose: Keeping all other things constant, an increase in glucose level by 1 mg/DL, on average, will increase the risk of CHD by 0.1%.
+  * heartRate: Keeping all other things constant, an increase in heartRate by 1 unit, on average, will increase the risk of CHD by 0.1%.
+* Logit7 - 
+  * cigsPerDay: Keeping all other things constant, an increase in cigarettes smoked per day by 1, on average, will increase the chance of CHD by 0.2%.
+  * age: Keeping all other things constant, an increase in age by 1 year, on average will increase the chance of CHD by 0.9%.
+  * male: Keeping all other things constant, on average, Males have higher risk of CHD than Females by 5.0%.
+  * BPMeds: Keeping all other things constant, on average, a person on BP Medication has a higher risk of CHD than a person not on BP Medication by 12.1%.
+  * glucose: Keeping all other things constant, an increase in glucose level by 1 mg/DL, on average, will increase the risk of CHD by 0.1%.
+  * heartRate: Keeping all other things constant, an increase in heartRate by 1 unit, on average, will increase the risk of CHD by 0.1%.
+  * prevalentStroke: Keeping all other things constant, on average a person with prevalent history of stroke is 30.9% more likely to have CHD. 
+  * I(BPMeds--prevalentStroke): Keeping all other things constant, the impact of prevalentStroke on CHD, on average, decreases by 11.6% for patients that are on BP Medication.
+  
+***  
+```{r}
+meffects1 <- ggpredict(l7, terms=c("prevalentStroke", 'BPMeds'))
+
+Plot_7 =ggplot(meffects1,aes(x, predicted, colour=group, group=group)) + geom_line(size=1.3) + 
+  xlab("BPMeds") + ylab("TenYearCHD") +
+  labs(colour="prevalent\nStroke?") + 
+  scale_colour_discrete(labels=c("No", "Yes")) +
+  scale_x_discrete(breaks=c(0,1), labels=c("No BPMeds", "BPMeds"))
+suppressMessages(print(Plot_7))
+
+```
+
+
+
+# Joint Hypothesis Testing Using the Chi-squared $\Large \chi^2$ Test 
+
+***
+
+After adding the Interaction term in Model 7 ,the value of $\hat{β1}$ didn't change . Let's compare Model 6 and Model 7 using Chi- Square Test to find the better model . 
+
+<b>$\sf{H_{O}}$</b>:β1=0 and β2=0 and β3=0 and β4=0 and β5=0 and β6=0,
+
+<b>$\sf{H_{A}}$</b>:β1 $\ne$ 0 and/or β2	$\ne$ 0 and/or β3	$\ne$ 0 and/or β4	$\ne$ 0 and/or β5	$\ne$ 0 and/or β6	$\ne$ 0 and/or β7	$\ne$ 0
+```{r}
+anova(l6, l7, test = 'Chisq')
+```
+The probability of seeing a difference is 0.003530654 which is less than 0.05 (which is the alpha level associated with a 95% confidence level).
+
+The small p-value from the Chi-squared test would lead us to conclude that at least one of the regression coefficients in the model is not equal to zero.
+
+Thus, we can reject the null hypothesis that coefficients are zero at any level of significance commonly used in practice.
+
+# Conclusion
+***
+From our analytical study, we can conclude the consistent evidence supporting a causal role of smoking in causing coronary heart disease. Thus establishing a causal relationship between the two.
+```{r}
+coeff1 = summary(l1)$coefficients[2,1]
+coeff1=round(coeff1,digits=3)
+ 
+coeff2 = summary(l2)$coefficients[2,1]
+coeff2=round(coeff2,digits=3)
+ 
+coeff3 = summary(l3)$coefficients[2,1]
+coeff3=round(coeff3,digits=3)
+
+coeff4 = summary(l4)$coefficients[2,1]
+coeff4=round(coeff4,digits=3)
+
+coeff5 = summary(l5)$coefficients[2,1]
+coeff5=round(coeff5,digits=3)
+coeff5=signif(coeff5,digits=2)
+ 
+coeff6 = summary(l6)$coefficients[2,1]
+coeff6=round(coeff6,digits=3) 
+coeff6=signif(coeff6,digits=2)
+ 
+coeff7 = summary(l7)$coefficients[2,1]
+coeff7=round(coeff7,digits=4)
+coeff7=signif(coeff7,digits=3)
+
+smoke <- matrix(c (coeff1, coeff2, coeff3, coeff4, coeff5, coeff6,coeff7),ncol=7,byrow=TRUE)
+colnames(smoke) <- c("Logit1","Logit2","Logit3","Logit4","Logit5","Logit6","Logit7")
+rownames(smoke) <- c("cigsPerDay")
+smoke <- as.table(smoke)
+smoke
+```
+$\hat{β1}$= 0.021 (significant with 95% confidence)
+Marginal Effect of β1 = 0.002
+
+Looking at our model, we can say: <b>For every extra cigarette smoked, on average, the risk of getting CHD (over the course of next 10 years) will increase by 0.2%, holding other variables constant.</b>
+
+***
+
+
+# Validity & Limitations
+*** 
+
+* <b> <u>Threats to Internal Validity </u></b>:
+
+  + <b> Omitted variable Bias</b> : Added control variables till the estimate β1 was consistent. 
+  + <b> Misspecification of the functional form </b>: Dependent variable is binary, so we used Logit.
+  + <b> Measurement errors </b>: Could be present, not enough information to account for it.
+           
+  + <b> Missing data and sample selection</b> : Imputed missing values using mean() and median() methods after checking for outliers in the variables of interest.
+
+
+
+* <b><u>Threats to External Validity</u></b>:
+
+  + <b> Differences in populations </b>: Estimated results for 10YearCHD using data from       Framingham, MA, USA might not hold true for some other country like India with individuals having high risk of heart related diseases. Eg: Diets are completely different along with their medical conditions.
+
+  + <b> Differences in settings</b> : Diagnostic and treatment procedures may vary.
+
+
+
+
+
+*** 
+\fancyfoot[CO,CE]{Thank you }
+
