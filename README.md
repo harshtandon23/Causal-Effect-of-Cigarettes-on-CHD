@@ -48,7 +48,7 @@ There are a NULL Value on education, cigsPerDay, BPMeds, totChol, BMI, heartRate
 
 Lets plot the data to see if there are any outliers.
 
-<img src="" alt="plot showing outliers in data">
+<img src="https://raw.githubusercontent.com/harshtandon23/Causal-Effect-of-Cigarettes-on-CHD/master/images/1.png" alt="plot showing outliers in data">
 
 * there is no outlier data on education feature, so we can use mean()
 * there are outlier data on cigsPerDay feature, so it should be use median() approach
@@ -75,7 +75,7 @@ After imputing the missing values, data is free from missing values, let’s com
 
 Correlation between independent variables.
 
-<img src="" alt="correlation plot">
+<img src="https://raw.githubusercontent.com/harshtandon23/Causal-Effect-of-Cigarettes-on-CHD/master/images/2.png" alt="correlation plot">
 
 Lets look at some correlations that are higher than 0.70. Correlations below 0.70 can be assumed to not affect our analysis.
 
@@ -86,14 +86,14 @@ Lets look at some correlations that are higher than 0.70. Correlations below 0.7
 ## Analysis
 How does our Variable of Interest affect our dependent variable?
 
-<img src="" alt="plot of TenYearCHD vs cigsPerDay">
+<img src="https://raw.githubusercontent.com/harshtandon23/Causal-Effect-of-Cigarettes-on-CHD/master/images/3.png" alt="plot of TenYearCHD vs cigsPerDay">
 
 From our expectations, an increase in the number of cigarettes per day should increase the risk of getting coronary heart disease.
 
 ## In our base model, lets add some control variable
 ### Adding Control Variable: Age
 
-<img src="" alt="plot of TenYearCHD vs age">
+<img src="https://raw.githubusercontent.com/harshtandon23/Causal-Effect-of-Cigarettes-on-CHD/master/images/4.png" alt="plot of TenYearCHD vs age">
 
 From the plot between Age and dependent variable, it appears as age increases, the risk of getting Coronary Heart Disease increases.
 Lets see how age relates to cigsPerDay (variable of interest).
@@ -115,7 +115,7 @@ Interpretation:
 
 ### Adding Control Variable:Male
 
-<img src="" alt="plot of TenYearCHD vs Male">
+<img src="https://raw.githubusercontent.com/harshtandon23/Causal-Effect-of-Cigarettes-on-CHD/master/images/5.png" alt="plot of TenYearCHD vs Male">
 
 From the plot between Male and dependent variable, it appears that the risk of getting Coronary Heart Disease increases is greater for males than females.
 
@@ -140,7 +140,8 @@ Interpretation:
   
 ### Adding Control Variable:BPMeds
   
-<img src="" alt="plot of TenYearCHD vs BPMeds">
+<img src="https://raw.githubusercontent.com/harshtandon23/Causal-Effect-of-Cigarettes-on-CHD/master/images/6.png" alt="plot of TenYearCHD vs BPMeds">
+
 Lets see how BPMeds relates to cigsPerDay (variable of interest).
 
 > `Correlation (X, Z): -0.04467498`
@@ -165,7 +166,7 @@ Interpretation:
   
 ### Adding Control Variable: glucose
 
-<img src="" alt="plot of TenYearCHD vs glucose">
+<img src="https://raw.githubusercontent.com/harshtandon23/Causal-Effect-of-Cigarettes-on-CHD/master/images/7.png" alt="plot of TenYearCHD vs glucose">
 
 From the plot between glucose and dependent variable, it appears as levels of glucose increase, the risk of getting Coronary Heart Disease increases.
 
@@ -193,7 +194,7 @@ Interpretation:
   
 ### Adding Control Variable:heartRate
 
-<img src="" alt="plot of TenYearCHD vs heartRate">
+<img src="https://raw.githubusercontent.com/harshtandon23/Causal-Effect-of-Cigarettes-on-CHD/master/images/8.png" alt="plot of TenYearCHD vs heartRate">
 
 From the plot between heartRate and dependent variable, it appears as heartRate increases, the risk of getting Coronary Heart Disease increases.
 Lets see how heartRate relates to cigsPerDay (variable of interest).
@@ -253,6 +254,8 @@ Interpretation:
   * heartRate: Keeping all other things constant, an increase in heartRate by 1 unit, on average, will increase the risk of CHD by 0.1%.
   * prevalentStroke: Keeping all other things constant, on average a person with prevalent history of stroke is 30.9% more likely to have CHD.
   * I(BPMeds–prevalentStroke): Keeping all other things constant, the impact of prevalentStroke on CHD, on average, decreases by 11.6% for patients that are on BP Medication.
+  
+<img src="https://raw.githubusercontent.com/harshtandon23/Causal-Effect-of-Cigarettes-on-CHD/master/images/9.png" alt="interaction plot">
 
 ## Joint Hypothesis Testing Using the Chi-squared χ2 Test
 After adding the Interaction term in Model 7 ,the value of β1^ didn’t change . Let’s compare Model 6 and Model 7 using Chi- Square Test to find the better model .
